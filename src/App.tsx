@@ -1,121 +1,138 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import Dashboard from './Components/Dashboard'
+import Employee from './Components/Employee'
+import EmployeeForm from './Components/EmployeeForm'
+import Department from './Components/Department'
+import DepartmentForm from './Components/DepartmentForm'
+import type { EmployeeData } from './Components/Employee' 
+import type { DepartmentData } from './Components/Department' // Type-only import protection
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  // 1. Expand view routes to support departments
+  const [currentView, setCurrentView] = useState<'Dashboard' | 'Employee' | 'EmployeeForm' | 'Department' | 'DepartmentForm'>('Dashboard')
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  
+  const [employees, setEmployees] = useState<EmployeeData[]>([
+    { id: '#001', name: 'Alex Rivera', role: 'Lead Systems Architect', status: 'Active' },
+    { id: '#002', name: 'Jordan Lee', role: 'Frontend Engineer', status: 'Active' },
+    { id: '#003', name: 'Taylor Wong', role: 'UI/UX Designer', status: 'On Leave' },
+  ])
+
+  // 2. Department Core Array State Engine
+  const [departments, setDepartments] = useState<DepartmentData[]>([
+    { id: '#D01', name: 'Engineering Core', manager: 'Alex Rivera', count: 12 },
+    { id: '#D02', name: 'Design Studio', manager: 'Taylor Wong', count: 4 },
+  ])
+
+  const totalWorkforce = employees.length
+  const activeDeployments = employees.filter(emp => emp.status === 'Active').length
+  const personnelLeave = employees.filter(emp => emp.status === 'On Leave').length
+
+  const handleAddNewEmployee = (name: string, role: string, status: 'Active' | 'On Leave') => {
+    const newEmp: EmployeeData = { id: `#00${employees.length + 1}`, name, role, status }
+    setEmployees([...employees, newEmp])
+    setCurrentView('Employee')
+  }
+
+  // 3. Department Creation handler function
+  const handleAddNewDepartment = (name: string, manager: string) => {
+    const newDept: DepartmentData = {
+      id: `#D0${departments.length + 1}`,
+      name,
+      manager,
+      count: 0
+    }
+    setDepartments([...departments, newDept])
+    setCurrentView('Department')
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="phalix-layout">
+      {/* Sidebar Navigation */}
+      <aside className={`sidebar ${isSidebarOpen ? 'sidebar-open' : 'sidebar-collapsed'}`}>
+        <div className="sidebar-brand">
+          <h2>Phalix</h2>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+        <nav className="sidebar-menu">
+          <button 
+            type="button"
+            className={`menu-link ${currentView === 'Dashboard' ? 'active' : ''}`}
+            onClick={() => setCurrentView('Dashboard')}
+          >
+            <span className="material-symbols-outlined nav-icon">dashboard</span>
+            Dashboard
+          </button>
+          <button 
+            type="button"
+            className={`menu-link ${currentView === 'Employee' || currentView === 'EmployeeForm' ? 'active' : ''}`}
+            onClick={() => setCurrentView('Employee')}
+          >
+            <span className="material-symbols-outlined nav-icon">group</span>
+            Employee
+          </button>
+          {/* 4. NEW: INJECTED COMPACT DEPARTMENT OPTION BUTTON */}
+          <button 
+            type="button"
+            className={`menu-link ${currentView === 'Department' || currentView === 'DepartmentForm' ? 'active' : ''}`}
+            onClick={() => setCurrentView('Department')}
+          >
+            <span className="material-symbols-outlined nav-icon">domain</span>
+            Department
+          </button>
+        </nav>
+      </aside>
 
-      <div className="ticks"></div>
+      {/* Main Content Workspace Frame */}
+      <div className={`main-workspace ${isSidebarOpen ? 'sidebar-visible' : 'sidebar-hidden'}`}>
+        <header className="top-navbar">
+          <button type="button" className="toggle-sidebar-btn" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+            <span className="material-symbols-outlined">menu</span>
+          </button>
+          <h3 className="top-navbar-title">Phalix Management Platform</h3>
+        </header>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        <main className="content-body">
+          {currentView === 'Dashboard' && (
+            <Dashboard 
+              totalWorkforce={totalWorkforce}
+              activeDeployments={activeDeployments}
+              personnelLeave={personnelLeave}
+              onLaunchPortal={() => setCurrentView('Employee')} 
+            />
+          )}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+          {currentView === 'Employee' && (
+            <Employee 
+              employees={employees} 
+              onGoToOnboardPage={() => setCurrentView('EmployeeForm')} 
+            />
+          )}
+
+          {currentView === 'EmployeeForm' && (
+            <EmployeeForm 
+              onSubmit={handleAddNewEmployee} 
+              onCancel={() => setCurrentView('Employee')} 
+            />
+          )}
+
+          {/* 5. NEW: COMPONENT CONDITIONAL MULTI-ROUTER MAPPINGS */}
+          {currentView === 'Department' && (
+            <Department 
+              departments={departments} 
+              onGoToOnboardPage={() => setCurrentView('DepartmentForm')} 
+            />
+          )}
+
+          {currentView === 'DepartmentForm' && (
+            <DepartmentForm 
+              onSubmit={handleAddNewDepartment} 
+              onCancel={() => setCurrentView('Department')} 
+            />
+          )}
+        </main>
+      </div>
+    </div>
   )
 }
 
